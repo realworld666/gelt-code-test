@@ -5,7 +5,7 @@
   - <style scoped> is like CSS modules - styles only apply to this component
 -->
 <script setup lang="ts">
-import MashGame from './components/MashGame.vue'
+import MashGame from './components/MashGame.vue';
 </script>
 
 <template>

@@ -1,42 +1,44 @@
 <!--
-  CategoryDisplay Component - Shows completed categories in a grid
-  
+  CategoryDisplay Component - Shows categories in a consistent grid layout
+
   For React Developers:
   - This is a presentational component that only receives props
-  - No state management, just displays data
-  - Similar to a React functional component that only renders
+  - Now handles both completed categories and playing phase categories
+  - Similar to a React functional component that renders different states
 -->
 <script setup lang="ts">
-interface Category {
-  name: string
-  displayName: string
-  options: string[]
-  completed: boolean
-  selectedIndex: number | null
-}
+import type { Category } from '@/types.ts';
 
 interface Props {
-  categories: Record<string, Category>
+  categories: Category[];
+  isPlaying?: boolean; // If true, show crossed-out options and selected items
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  isPlaying: false,
+});
 </script>
 
 <template>
-  <div class="completed-categories">
-    <h3>Completed Categories:</h3>
-    <div class="completed-grid">
-      <div 
-        v-for="category in Object.values(categories).filter(cat => cat.completed)" 
+  <div class="category-display-container">
+    <div class="categories-grid">
+      <div
+        v-for="category in props.categories"
         :key="category.name"
-        class="completed-category"
+        class="category-item"
+        :class="{ 'playing-mode': isPlaying }"
       >
         <h4>{{ category.displayName }}</h4>
-        <div class="completed-options">
-          <span 
-            v-for="(option, index) in category.options" 
+        <div class="options-list">
+          <span
+            v-for="(option, index) in category.options"
             :key="index"
-            class="completed-option"
+            class="option"
+            :class="{
+              crossed: isPlaying && category.crossedOptions.has(index),
+              selected: isPlaying && category.selectedIndex === index,
+              'completed-option': !isPlaying,
+            }"
           >
             {{ option }}
           </span>
@@ -47,50 +49,80 @@ defineProps<Props>()
 </template>
 
 <style scoped>
-.completed-categories {
+.category-display-container {
   margin-top: 30px;
   text-align: left;
 }
 
-.completed-categories h3 {
+.category-display-container h3 {
   text-align: center;
   margin-bottom: 20px;
   color: #333;
 }
 
-.completed-grid {
+.categories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   max-width: 800px;
   margin: 0 auto;
 }
 
-.completed-category {
+.category-item {
   background: #f8f9fa;
   border: 2px solid #e9ecef;
   border-radius: 10px;
   padding: 15px;
 }
 
-.completed-category h4 {
+.category-item.playing-mode {
+  background: #f9f9f9;
+  border: 2px solid #eee;
+}
+
+.category-item h4 {
   margin-bottom: 10px;
   color: #495057;
   font-size: 1.1rem;
+  text-align: center;
 }
 
-.completed-options {
+.options-list {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
+}
+
+.option {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
 
 .completed-option {
   background: white;
-  padding: 8px 12px;
-  border-radius: 5px;
-  border: 1px solid #dee2e6;
   color: #495057;
-  font-size: 0.9rem;
+}
+
+/* Playing mode styles */
+.option.crossed {
+  text-decoration: line-through;
+  opacity: 0.5;
+  background: #ffebee;
+  color: #999;
+}
+
+.option.selected {
+  background: #e8f5e8;
+  border-color: #4caf50;
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.option:not(.crossed):not(.selected) {
+  background: white;
+  border: 1px solid #ddd;
 }
 </style>
