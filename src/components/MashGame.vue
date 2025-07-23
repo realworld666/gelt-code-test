@@ -1,25 +1,15 @@
-<!--
-  MASH Game Component - Vue TypeScript Implementation
-
-  For React Developers:
-  - This is like a functional component with useState, useEffect, etc.
-  - ref() is like useState for primitive values
-  - reactive() is like useState for objects
-  - computed() is like useMemo
-  - watch() is like useEffect with dependencies
-  - Component imports are like importing other React components
--->
 <script setup lang="ts">
+import GamePlaying from '@/components/GamePlaying.vue';
+import GameSetup from '@/components/GameSetup.vue';
+import NewGameNewGameModal from '@/components/NewGameModal.vue';
 import type { GameState } from '@/types.ts';
-import { computed, reactive } from 'vue';
-import CategoryDisplay from './CategoryDisplay.vue';
-import CategoryInput from './CategoryInput.vue';
+import { computed, provide, reactive, ref } from 'vue';
 import GameResults from './GameResults.vue';
 
-const DEBUG_ANIMATION_STAGE = true;
+// If this is set to true then pressing "New Game" will populate all the categories with dummy values for testing
+const DEBUG_ANIMATION_STAGE = false;
 
-// Reactive state (like useState in React)
-// ref() creates a reactive reference for primitive values
+// Game State
 const gameState = reactive<GameState>({
   phase: 'setup',
   selectedCategory: null,
@@ -86,84 +76,24 @@ const gameState = reactive<GameState>({
   allItems: [],
 });
 
-// Computed properties (like useMemo in React)
-// These automatically update when their dependencies change
-const availableCategories = computed(() => {
-  return Object.values(gameState.categories).filter((cat) => !cat.allOptionsAdded);
+provide('gameState', gameState);
+
+// Add state for confirmation modal
+const showConfirmModal = ref(false);
+
+// Avoid user accidentally losing their progress by clicking the wrong button (yes, I did this more than once)
+// Check if there's progress that would be lost
+const hasProgress = computed(() => {
+  // Check if any categories have options added or are completed
+  const hasAddedOptions = Object.values(gameState.categories).some(
+    (cat) => cat.options.length > 0 || cat.allOptionsAdded
+  );
+
+  // Check if the game is not in the setup phase
+  const gameInProgress = gameState.phase !== 'setup';
+
+  return hasAddedOptions || gameInProgress;
 });
-
-const allCategoriesComplete = computed(() => {
-  return Object.values(gameState.categories).every((cat) => cat.allOptionsAdded);
-});
-
-// Should we show the add option button?
-const canAddOption = computed(() => {
-  const category = gameState.selectedCategory
-    ? gameState.categories[gameState.selectedCategory]
-    : null;
-  if (!category || category.options.length >= 5 || gameState.currentInput.trim().length === 0) {
-    return false;
-  }
-  // Check for duplicates (case-insensitive)
-  const trimmedInput = gameState.currentInput.trim().toLowerCase();
-  return !category.options.some((option) => option.toLowerCase() === trimmedInput);
-});
-
-// Have we added enough options to complete the category
-const canFinishCategory = computed(() => {
-  const category = gameState.selectedCategory
-    ? gameState.categories[gameState.selectedCategory]
-    : null;
-  return category && category.options.length >= 4;
-});
-
-// Have we added enough categories to start the game
-const canStartGame = computed(() => {
-  return allCategoriesComplete.value && gameState.mashLetters.filter((m) => !m.crossed).length > 1;
-});
-
-const selectCategory = (categoryKey: string) => {
-  if (gameState.selectedCategory) return; // Category already selected
-
-  gameState.selectedCategory = categoryKey;
-  gameState.currentInput = '';
-};
-
-const addOption = () => {
-  if (!canAddOption.value || !gameState.selectedCategory) return;
-
-  const category = gameState.categories[gameState.selectedCategory];
-  category.options.push(gameState.currentInput.trim());
-  gameState.currentInput = '';
-};
-
-// TODO: Add sensible bad options for each category
-const addBadOption = () => {
-  if (!gameState.selectedCategory) return;
-
-  const category = gameState.categories[gameState.selectedCategory];
-  const badOptions = [
-    'Terrible option',
-    'Worst case scenario',
-    'Nightmare choice',
-    'Absolutely awful',
-    'Complete disaster',
-    'Total failure',
-  ];
-  const randomBad = badOptions[Math.floor(Math.random() * badOptions.length)];
-  category.options.push(randomBad);
-};
-
-const finishCategory = () => {
-  if (!canFinishCategory.value || !gameState.selectedCategory) return;
-
-  const category = gameState.categories[gameState.selectedCategory];
-
-  addBadOption();
-
-  category.allOptionsAdded = true;
-  gameState.selectedCategory = null;
-};
 
 // here we calculate which of the options are still active for during the animation phase
 const buildAllItems = () => {
@@ -194,8 +124,6 @@ const buildAllItems = () => {
 };
 
 const startGame = () => {
-  if (!canStartGame.value) return;
-
   gameState.phase = 'playing';
   gameState.magicNumber = Math.floor(Math.random() * 8) + 3; // Random number 3-10
 
@@ -222,7 +150,6 @@ const startGame = () => {
         gameState.phase = 'results';
         break;
       }
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   };
   if (!gameState.animationRunning) {
@@ -237,12 +164,6 @@ const runAnimationStep = async (currentPosition: number) => {
   checkAndCompleteCategories();
 
   const activeItems = gameState.allItems.filter((item) => !item.crossed);
-
-  // Check if we're done (only one item left total, or each category has one item)
-  /*  const activeMash = gameState.mashLetters.filter((m) => !m.crossed).length;
-  const incompleteCategories = Object.values(gameState.categories).filter(
-    (cat) => !cat.allOptionsAdded
-  ).length;*/
 
   if (activeItems.length <= 1) return -1;
 
@@ -315,8 +236,7 @@ const skipAnimation = () => {
 
   // Randomly select one from each category and MASH
   Object.values(gameState.categories).forEach((category) => {
-    const randomIndex = Math.floor(Math.random() * category.options.length);
-    category.selectedIndex = randomIndex;
+    category.selectedIndex = Math.floor(Math.random() * category.options.length);
     category.allOptionsAdded = true;
   });
 
@@ -334,6 +254,26 @@ const skipAnimation = () => {
 };
 
 const newGame = () => {
+  // Check if there's progress that would be lost
+  if (hasProgress.value) {
+    showConfirmModal.value = true;
+    return;
+  }
+
+  // If no progress, start new game immediately
+  resetGame();
+};
+
+const confirmNewGame = () => {
+  showConfirmModal.value = false;
+  resetGame();
+};
+
+const cancelNewGame = () => {
+  showConfirmModal.value = false;
+};
+
+const resetGame = () => {
   // Reset all state
   gameState.phase = 'setup';
   gameState.selectedCategory = null;
@@ -363,83 +303,9 @@ const newGame = () => {
     }
   });
 };
-
-// Get final results
-const getFinalResults = computed(() => {
-  const selectedMash = gameState.mashLetters.find((m) => m.selected || !m.crossed);
-  const results = {
-    homeType: selectedMash?.letter || 'M',
-    partner:
-      gameState.categories.partner.options
-        .filter(
-          (option) =>
-            !gameState.categories.partner.crossedOptions.has(
-              gameState.categories.partner.options.indexOf(option)
-            )
-        )
-        .pop() || '',
-    kids:
-      gameState.categories.kids.options
-        .filter(
-          (option) =>
-            !gameState.categories.kids.crossedOptions.has(
-              gameState.categories.kids.options.indexOf(option)
-            )
-        )
-        .pop() || '',
-    job:
-      gameState.categories.job.options
-        .filter(
-          (option) =>
-            !gameState.categories.job.crossedOptions.has(
-              gameState.categories.job.options.indexOf(option)
-            )
-        )
-        .pop() || '',
-    salary:
-      gameState.categories.salary.options
-        .filter(
-          (option) =>
-            !gameState.categories.salary.crossedOptions.has(
-              gameState.categories.salary.options.indexOf(option)
-            )
-        )
-        .pop() || '',
-    car:
-      gameState.categories.car.options
-        .filter(
-          (option) =>
-            !gameState.categories.car.crossedOptions.has(
-              gameState.categories.car.options.indexOf(option)
-            )
-        )
-        .pop() || '',
-    home:
-      gameState.categories.home.options
-        .filter(
-          (option) =>
-            !gameState.categories.home.crossedOptions.has(
-              gameState.categories.home.options.indexOf(option)
-            )
-        )
-        .pop() || '',
-  };
-
-  return results;
-});
-
-// Input handling is now in CategoryInput component
 </script>
 
 <template>
-  <!--
-    Vue Template Syntax for React Developers:
-    - v-if is like conditional rendering with &&
-    - v-for is like .map() for arrays
-    - v-model is like value + onChange combined
-    - @click is like onClick
-    - :class is like className with dynamic values
-  -->
   <div class="mash-game">
     <!-- MASH Title -->
     <div class="mash-title" v-if="gameState.phase !== 'results'">
@@ -456,74 +322,23 @@ const getFinalResults = computed(() => {
       </span>
     </div>
     <!-- Setup Phase -->
-    <div v-if="gameState.phase === 'setup'" class="setup-phase">
-      <!-- Category Selection -->
-      <div v-if="!gameState.selectedCategory" class="category-selection">
-        <h2>Choose a category to fill out:</h2>
-
-        <!-- Available Categories -->
-        <div v-if="availableCategories.length > 0" class="category-buttons">
-          <button
-            v-for="category in availableCategories"
-            :key="category.name"
-            @click="selectCategory(category.name)"
-            class="category-button"
-          >
-            {{ category.displayName }}
-          </button>
-        </div>
-
-        <!-- Completed Categories Display -->
-        <CategoryDisplay
-          v-if="Object.values(gameState.categories).some((cat) => cat.allOptionsAdded)"
-          :categories="Object.values(gameState.categories).filter((cat) => cat.allOptionsAdded)"
-          :is-playing="false"
-        />
-      </div>
-
-      <!-- Category Input -->
-      <CategoryInput
-        v-else
-        :category-name="gameState.selectedCategory"
-        :display-name="gameState.categories[gameState.selectedCategory].displayName"
-        :options="gameState.categories[gameState.selectedCategory].options"
-        v-model:current-input="gameState.currentInput"
-        @add-option="addOption"
-        @finish-category="finishCategory"
-      />
-
-      <!-- Start Game Button -->
-      <div v-if="allCategoriesComplete" class="start-game-section">
-        <h2>All categories complete!</h2>
-        <button @click="startGame" class="start-game-button">Start MASH Game!</button>
-      </div>
-    </div>
+    <GameSetup v-if="gameState.phase === 'setup'" @start-game="startGame" />
 
     <!-- Playing Phase -->
-    <div v-if="gameState.phase === 'playing'" class="playing-phase">
-      <div class="game-info">
-        <h2>Magic Number: {{ gameState.magicNumber }}</h2>
-        <p v-if="gameState.animationRunning">Counting through options...</p>
-      </div>
-
-      <!-- Categories Display - Using consistent CategoryDisplay component -->
-      <CategoryDisplay
-        :categories="Object.values(gameState.categories)"
-        :show-only-completed="false"
-        :is-playing="true"
-      />
-
-      <!-- Skip Animation Button -->
-      <button v-if="gameState.animationRunning" @click="skipAnimation" class="skip-button">
-        Skip Animation
-      </button>
-    </div>
+    <GamePlaying v-if="gameState.phase === 'playing'" @skip-animation="skipAnimation" />
 
     <!-- Results Phase -->
-    <GameResults v-if="gameState.phase === 'results'" :results="getFinalResults" />
+    <GameResults v-if="gameState.phase === 'results'" />
 
     <!-- New Game Button (always available) -->
     <button @click="newGame" class="new-game-button">New Game</button>
+
+    <!-- Confirmation Modal -->
+    <NewGameNewGameModal
+      v-if="showConfirmModal"
+      :confirm="confirmNewGame"
+      :cancel="cancelNewGame"
+    />
   </div>
 </template>
 
@@ -569,81 +384,9 @@ const getFinalResults = computed(() => {
   text-shadow: 2px 2px 4px rgba(76, 175, 80, 0.3);
 }
 
-.setup-phase {
-  margin: 30px 0;
-}
-
-.category-selection h2 {
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.category-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin: 20px 0;
-}
-
-.category-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 15px 20px;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.category-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.start-game-section {
-  margin: 30px 0;
-}
-
-.start-game-button {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-  color: white;
-  border: none;
-  padding: 20px 40px;
-  border-radius: 15px;
-  font-size: 1.3rem;
-  cursor: pointer;
-  margin-top: 20px;
-  transition: transform 0.2s ease;
-}
-
-.start-game-button:hover {
-  transform: scale(1.05);
-}
-
-.playing-phase {
-  margin: 30px 0;
-}
-
-.game-info {
-  margin-bottom: 30px;
-}
-
 .game-info h2 {
   color: #333;
   margin-bottom: 10px;
-}
-
-.skip-button {
-  background: #f44336;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 20px;
 }
 
 .new-game-button {
@@ -673,9 +416,5 @@ const getFinalResults = computed(() => {
   100% {
     background-color: transparent;
   }
-}
-
-.option.highlighting {
-  animation: highlight 0.3s ease;
 }
 </style>

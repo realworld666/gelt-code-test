@@ -6,6 +6,9 @@
   - Similar to a React component that renders final state
 -->
 <script setup lang="ts">
+import type { GameState } from '@/types.ts';
+import { computed, inject } from 'vue';
+
 interface Results {
   homeType: string;
   partner: string;
@@ -16,11 +19,69 @@ interface Results {
   home: string;
 }
 
-interface Props {
-  results: Results;
-}
+const gameState = inject('gameState') as GameState;
 
-defineProps<Props>();
+// Get final results
+const results = computed<Results>(() => {
+  const selectedMash = gameState.mashLetters.find((m) => m.selected || !m.crossed);
+  return {
+    homeType: selectedMash?.letter || 'M',
+    partner:
+      gameState.categories.partner.options
+        .filter(
+          (option) =>
+            !gameState.categories.partner.crossedOptions.has(
+              gameState.categories.partner.options.indexOf(option)
+            )
+        )
+        .pop() || '',
+    kids:
+      gameState.categories.kids.options
+        .filter(
+          (option) =>
+            !gameState.categories.kids.crossedOptions.has(
+              gameState.categories.kids.options.indexOf(option)
+            )
+        )
+        .pop() || '',
+    job:
+      gameState.categories.job.options
+        .filter(
+          (option) =>
+            !gameState.categories.job.crossedOptions.has(
+              gameState.categories.job.options.indexOf(option)
+            )
+        )
+        .pop() || '',
+    salary:
+      gameState.categories.salary.options
+        .filter(
+          (option) =>
+            !gameState.categories.salary.crossedOptions.has(
+              gameState.categories.salary.options.indexOf(option)
+            )
+        )
+        .pop() || '',
+    car:
+      gameState.categories.car.options
+        .filter(
+          (option) =>
+            !gameState.categories.car.crossedOptions.has(
+              gameState.categories.car.options.indexOf(option)
+            )
+        )
+        .pop() || '',
+    home:
+      gameState.categories.home.options
+        .filter(
+          (option) =>
+            !gameState.categories.home.crossedOptions.has(
+              gameState.categories.home.options.indexOf(option)
+            )
+        )
+        .pop() || '',
+  };
+});
 
 const getHomeTypeText = (letter: string) => {
   switch (letter) {
