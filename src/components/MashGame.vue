@@ -28,6 +28,13 @@ const gameState = reactive<GameState>({
       allOptionsAdded: false,
       selectedIndex: null,
       crossedOptions: new Set(),
+      badOptions: [
+        'Your Year 9 Maths teacher',
+        "A tax-evading minor celebrity from the '80s",
+        'The AI that answers your bank’s phone system',
+        'A wax statue of Mr. Bean',
+        "A conspiracy YouTuber who thinks birds aren't real",
+      ],
     },
     kids: {
       name: 'kids',
@@ -36,6 +43,7 @@ const gameState = reactive<GameState>({
       allOptionsAdded: false,
       selectedIndex: null,
       crossedOptions: new Set(),
+      badOptions: ['100', '1000'],
     },
     job: {
       name: 'job',
@@ -44,6 +52,13 @@ const gameState = reactive<GameState>({
       allOptionsAdded: false,
       selectedIndex: null,
       crossedOptions: new Set(),
+      badOptions: [
+        'Professional cheese sniffer (in a windowless basement)',
+        'Telemarketer for cursed encyclopedias',
+        'Mascot for a failing fish & chips chain',
+        'The person who tests public toilet hand dryers',
+        'Goose herder on a motorway median',
+      ],
     },
     salary: {
       name: 'salary',
@@ -52,6 +67,7 @@ const gameState = reactive<GameState>({
       allOptionsAdded: false,
       selectedIndex: null,
       crossedOptions: new Set(),
+      badOptions: ['£1 a year', '200 Babybels', 'Monopoly money'],
     },
     car: {
       name: 'car',
@@ -60,6 +76,13 @@ const gameState = reactive<GameState>({
       allOptionsAdded: false,
       selectedIndex: null,
       crossedOptions: new Set(),
+      badOptions: [
+        'A unicycle with no seat',
+        'Flintstones-style car (you power it with your feet)',
+        'A hearse full of angry wasps',
+        'A Smart car permanently stuck in reverse',
+        'A 1993 Vauxhall Astra with a haunted satnav',
+      ],
     },
     home: {
       name: 'home',
@@ -68,6 +91,13 @@ const gameState = reactive<GameState>({
       allOptionsAdded: false,
       selectedIndex: null,
       crossedOptions: new Set(),
+      badOptions: [
+        'A cardboard box behind Tesco',
+        'Haunted caravan in Slough',
+        'Inflatable bouncy castle (shared with 12 goats)',
+        'Victorian sewer converted into a studio flat',
+        'Room under the stairs (with a poltergeist roommate)',
+      ],
     },
   },
   magicNumber: 0,

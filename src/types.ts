@@ -2,6 +2,7 @@ export interface Category {
   name: string;
   displayName: string;
   options: string[];
+  badOptions: string[];
   allOptionsAdded: boolean;
   selectedIndex: number | null;
   crossedOptions: Set<number>; // Track which options are crossed out
