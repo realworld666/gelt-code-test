@@ -1,10 +1,3 @@
-<!--
-  CategoryInput Component - Handles input for a specific category
-
-  For React Developers:
-  - This component manages local input state and emits events to parent
-  - Similar to a controlled component in React with onChange callbacks
--->
 <script setup lang="ts">
 import { computed } from 'vue';
 

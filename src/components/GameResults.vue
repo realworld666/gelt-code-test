@@ -1,10 +1,3 @@
-<!--
-  GameResults Component - Displays the final MASH game results
-
-  For React Developers:
-  - This is a presentational component that receives results as props
-  - Similar to a React component that renders final state
--->
 <script setup lang="ts">
 import type { GameState } from '@/types.ts';
 import { computed, inject } from 'vue';
