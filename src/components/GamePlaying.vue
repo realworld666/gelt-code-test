@@ -5,11 +5,11 @@ import { inject } from 'vue';
 
 const gameState = inject('gameState') as GameState;
 
-const emit = defineEmits(['skip-animation']);
+//const emit = defineEmits(['skip-animation']);
 
-const skipAnimation = () => {
+/*const skipAnimation = () => {
   emit('skip-animation');
-};
+};*/
 </script>
 
 <template>
@@ -26,9 +26,9 @@ const skipAnimation = () => {
     />
 
     <!-- Skip Animation Button -->
-    <button v-if="gameState.animationRunning" @click="skipAnimation" class="skip-button">
+    <!--    <button v-if="gameState.animationRunning" @click="skipAnimation" class="skip-button">
       Skip Animation
-    </button>
+    </button>-->
   </div>
 </template>
 
@@ -41,7 +41,7 @@ const skipAnimation = () => {
   margin-bottom: 30px;
 }
 
-.skip-button {
+/*.skip-button {
   background: #f44336;
   color: white;
   border: none;
@@ -49,5 +49,5 @@ const skipAnimation = () => {
   border-radius: 8px;
   cursor: pointer;
   margin-top: 20px;
-}
+}*/
 </style>

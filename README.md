@@ -11,28 +11,6 @@ MASH is a fortune-telling game where players:
 4. Continue until only one option remains in each category
 5. Read your complete fortune!
 
-## Features
-
-- **Interactive Setup**: Click category buttons to fill out options
-- **Duplicate Prevention**: Cannot enter the same option twice in a category
-- **Completed Categories Display**: View filled categories in a two-column grid layout
-- **Animated Elimination**: Watch as the algorithm counts through MASH letters and category options
-- **Visual Feedback**: See crossed-out items and highlighted selections with improved contrast
-- **Skip Animation**: Option to complete the game instantly
-- **Responsive Design**: Works on desktop and mobile devices
-- **Component Architecture**: Modular Vue components following best practices
-- **TypeScript**: Full type safety and excellent developer experience
-
-## Vue Concepts for React Developers
-
-This project demonstrates key Vue concepts with comments explaining the React equivalents:
-
-- `ref()` and `reactive()` - Similar to `useState`
-- `computed()` - Similar to `useMemo`
-- `watch()` - Similar to `useEffect`
-- `v-if`, `v-for`, `v-model` - Template directives for conditional rendering, lists, and two-way binding
-- `<script setup>` - Composition API syntax similar to functional components with hooks
-
 ## Getting Started
 
 1. **Install dependencies:**
@@ -43,16 +21,6 @@ This project demonstrates key Vue concepts with comments explaining the React eq
 2. **Start development server:**
    ```bash
    npm run dev
-   ```
-
-3. **Type checking:**
-   ```bash
-   npm run type-check
-   ```
-
-4. **Build for production:**
-   ```bash
-   npm run build
    ```
 
 ## How to Play
@@ -73,54 +41,26 @@ This project demonstrates key Vue concepts with comments explaining the React eq
    - View your complete MASH fortune
    - Click "New Game" to play again
 
-## Project Structure
 
-- `src/App.vue` - Main application component
-- `src/components/MashGame.vue` - Main game logic and state management
-- `src/components/CategoryInput.vue` - Component for inputting category options
-- `src/components/CategoryDisplay.vue` - Component for displaying completed categories
-- `src/components/GameResults.vue` - Component for showing final fortune results
-- `src/main.ts` - Application entry point
-- TypeScript configuration for full type safety
+## Follow up questions
 
-## Component Architecture
-
-Following Vue best practices, the application is split into focused, reusable components:
-
-- **MashGame**: Main container with game state and logic
-- **CategoryInput**: Handles user input with validation and duplicate prevention
-- **CategoryDisplay**: Shows completed categories in a clean grid layout
-- **GameResults**: Presents the final fortune with emojis and summary
-
-## Technologies Used
-
-- Vue 3 with Composition API
-- TypeScript
-- Vite (build tool)
-- CSS with scoped styling
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+1. **What additional features or improvements could be added to enhance the game experience?**
+   1. The game could allow a second player to add the bad options rather than the app filling them in
+   2. The game could allow for a selection of different categories or for the player to type their own
+   3. The game could store its state so it doesnt reset on a page reload
+   4. Responsive UI so the game would display properly on mobile devices
+   5. Skip Animation button. I started implementing this but ran out of time. I think it would be a good feature to have.
+2. How could AI be leveraged to make the game more engaging or personalized?
+   1. AI could be used to generate the bad options rather than having a pre-defined list
+   2. It could also take the final results and generate a short story based on them
+3. What infrastructure would be required to support AI-enhanced functionality?
+   1. To support the above, which would be a fairly simple GPT call, an API endpoint that invokes OpenAI API (or equivalent) would be required
+4. How would you ensure that any AI-generated content or recommendations are accurate and appropriate?
+   1. A good set of prompts and instructions on the initial request to limit the scope of the AI output
+   2. While unlikely with a good prompt, additional checks on the output to ensure it is appropriate such as bad or offensive word filtering
+   3. Checking the input from the game to ensure it doesn't contain instructions to the AI to go off the rails
+   4. An ingame report tool to report any bad output from the AI
+5. If users wanted to save and revisit their previous game results, how would you design this feature?
+   1. The game would need an authentication system. This could be a hidden anonymous authentication that uses the device ID but this would limit the ability to share results between devices. A more traditional username/password or social login would be better but adds complexity.
+   2. An API would be required to store game results once the game is completed to a database. This API would also be used to retrieve the game results by user ID
+   3. The game UI would need to be modified to allow the user to load a previous game

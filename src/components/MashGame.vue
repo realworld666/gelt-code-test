@@ -264,21 +264,7 @@ const skipAnimation = () => {
   // Complete the elimination instantly
   gameState.animationRunning = false;
 
-  // Randomly select one from each category and MASH
-  Object.values(gameState.categories).forEach((category) => {
-    category.selectedIndex = Math.floor(Math.random() * category.options.length);
-    category.allOptionsAdded = true;
-  });
-
-  // Select random MASH letter
-  const availableMash = gameState.mashLetters.filter((m) => !m.crossed);
-  if (availableMash.length > 0) {
-    const randomMash = availableMash[Math.floor(Math.random() * availableMash.length)];
-    randomMash.selected = true;
-    gameState.mashLetters.forEach((m) => {
-      if (m !== randomMash) m.crossed = true;
-    });
-  }
+  // TODO:
 
   gameState.phase = 'results';
 };
