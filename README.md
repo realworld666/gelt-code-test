@@ -49,7 +49,8 @@ MASH is a fortune-telling game where players:
    2. The game could allow for a selection of different categories or for the player to type their own
    3. The game could store its state so it doesnt reset on a page reload
    4. Responsive UI so the game would display properly on mobile devices
-   5. Skip Animation button. I started implementing this but ran out of time. I think it would be a good feature to have.
+   5. UI layout could do with additional work so that its easy to see everything at once when watching the animation 
+   6. Skip Animation button. I started implementing this but ran out of time. I think it would be a good feature to have.
 2. How could AI be leveraged to make the game more engaging or personalized?
    1. AI could be used to generate the bad options rather than having a pre-defined list
    2. It could also take the final results and generate a short story based on them

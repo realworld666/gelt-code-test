@@ -87,10 +87,9 @@ const finishCategory = () => {
 
 <template>
   <div class="setup-phase">
-    <div class="category-selection">
+    <div v-if="!gameState.selectedCategory" class="category-selection">
       <!-- Category Selection -->
       <CategorySelectionButtons
-        v-if="!gameState.selectedCategory"
         :categories="availableCategories"
         @category-selected="selectCategory"
       />
